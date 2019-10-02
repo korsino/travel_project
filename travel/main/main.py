@@ -261,7 +261,7 @@ def select_history():
     id_user = data['id_user']
     try:
         mycursor = mydb.cursor(dictionary=True)
-        sql = "SELECT * FROM history WHERE id_user = {};".format(id_user)
+        sql = "SELECT date_booking,user.name,tour.name_tour,price,details,date_travel_start,date_travel_end,country.value FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.id_user = {};".format(id_user)
         mycursor.execute(sql, )
         result = mycursor.fetchall()
         mydb.commit()
