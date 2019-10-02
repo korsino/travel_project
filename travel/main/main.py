@@ -38,14 +38,18 @@ def register_user():
     test_data = [username, passwd, name, address]
     if (check_data(test_data)>0):
         return "กรอกข้อมูลไม่ครบ"
-    elif len(passwd) <= 8:
-        return "ใส่รหัสผ่านมากกว่า 8 ตัว"
+    elif len(passwd) <= 8 or len(passwd) >= 16:
+        return "ใส่รหัสผ่านมากกว่า 8 ตัว แต่ไม่เกิน 16 ตัว"
     elif len(phone) != 10:
         return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
         return "E-mail ไม่ถูกต้อง"
-    # elif re.match('^[_a-z0-9-]$',username) == None:
-        # return "ไม่สามารถใช้ภาษาไทยได้"
+    elif re.match('^([-_.a-zA-Z0-9]+)$',username) == None:
+        return "ไม่สามารถใช้ภาษาไทยได้"
+    elif re.match('^([-_.a-zA-Z0-9]+)$',passwd) == None:
+        return "ไม่สามารถใช้ภาษาไทยได้"
+    elif re.match('^(?=\S{8,16}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])',passwd) == None:
+        return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว ตัวเล็กอย่างน้อย 1 ตัว และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -175,14 +179,18 @@ def delete_programtour():
         return "ลบข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
 def login():
     mydb = connectsql()
+    mycursor = mydb.cursor(dictionary=True)
     data = request.json
     username = data['username']
     password = data['passwd']
     text_command = "SELECT passwd FROM `user` WHERE username = '{}'".format(username)
     dict_meg = {1: "Success login.", 2: "Please login again.", 3: "Don't have this username.", 4: "Password is empty."};
+    print(username)
     try:
-        mydb.execute(text_command)
-        passwd = mydb.fetchone()
+        mycursor.execute(text_command)
+        passwd = mycursor.fetchone()
+        print(passwd)
+        print(str(passwd.get('passwd')) == str(password))
         if (str(passwd.get('passwd')) == str(password)):
             show = dict_meg.get(1)
             status_code = 200
