@@ -69,6 +69,12 @@ vm_routes.add_url_rule(
     main.select_history,
     methods=['GET'],
 )
+vm_routes.add_url_rule(
+    'users/password/edit',
+    'users/password/edit',
+    main.edit_password,
+    methods=['PUT'],
+)
 
 
 

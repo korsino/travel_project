@@ -203,6 +203,7 @@ def delete_programtour():
         return "ลบข้อมูลโปรแกรมทัวร์สำเร็จ"
     except Exception as e:
         return "ลบข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+
 def login():
     mydb = connectsql()
     mycursor = mydb.cursor(dictionary=True)
@@ -268,3 +269,42 @@ def select_history():
         return jsonify({"result" : result})
     except Exception as e:
         return "เรียกข้อมูลประวัติการจองทัวร์ไม่สำเร็จ"
+
+def edit_password():
+
+    dict_meg = {1:"Success.",2:"Fail.",3:"Old password is wrong",4:"Don't have this username."};
+    mydb = connectsql()
+    data = request.json
+    username = data['username']
+    passwd = data['passwd']
+    new_password = data['new_password']
+    cheak_new_password = data['cheak_new_password']
+    try:
+        mycursor = mydb.cursor(dictionary=True)
+        sql = "SELECT passwd FROM user WHERE username = '{}';".format(username)
+        mycursor.execute(sql)
+        cheak_passwd = mycursor.fetchone()
+        if re.match('^(?=\S{8,16}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])', new_password) == None:
+            return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
+        elif new_password != cheak_new_password:
+            return "รหัสผ่านใหม่ไม่ตรงกัน"
+        else:
+            dict = {'username': username, 'passwd': passwd, 'new_password': new_password}
+            for i in dict:
+                if (dict.get(i) == ""):
+                    return Response(response=json.dumps({"meg": "{} is empty".format(i)}), status=203)
+                    print new_password + "1"
+                elif (passwd == cheak_passwd.get('passwd')):
+                    sql_update = "UPDATE user SET passwd ='{}' WHERE username = '{}';".format(new_password, username)
+                    mycursor.execute(sql_update)
+                    mydb.commit()
+                    return Response(response=json.dumps({"meg": dict_meg.get(1)}), status=200)
+                else:
+                    return Response(response=json.dumps({"meg": dict_meg.get(3)}), status=203)
+                    print new_password + "3"
+            mydb.close()
+
+    except Exception as e:
+        print(e)
+        return Response(response=json.dumps({"meg": dict_meg.get(4)}), status=203)
+
