@@ -57,6 +57,18 @@ vm_routes.add_url_rule(
     main.login,
     methods=['GET'],
 )
+vm_routes.add_url_rule(
+    'histories',
+    'histories',
+    main.add_history,
+    methods=['POST'],
+)
+vm_routes.add_url_rule(
+    'histories/get_history',
+    'histories/get_history',
+    main.select_history,
+    methods=['GET'],
+)
 
 
 
