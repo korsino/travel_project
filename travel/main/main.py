@@ -4,7 +4,8 @@ import mysql.connector
 import re
 from flask import *
 
-#from yaml import load
+import datetime
+
 
 def check_data(data):
     sum=0
@@ -14,6 +15,13 @@ def check_data(data):
         else:
             sum=sum+0
     return sum
+
+def check_date(D_Start, D_End, DT_Start, DT_End):
+    if D_Start > D_End or D_Start > DT_Start or D_Start > DT_End or D_End < DT_Start or D_End < DT_End or DT_Start > DT_End:
+        A = "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
+        return A
+    else:
+        return None
 
 def connectsql():
         mydb = mysql.connector.connect(
@@ -44,11 +52,9 @@ def register_user():
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
         return "E-mail ไม่ถูกต้อง"
     elif re.match('^([-_.a-zA-Z0-9]+)$',username) == None:
-        return "ไม่สามารถใช้ภาษาไทยได้"
-    elif re.match('^([-_.a-zA-Z0-9]+)$',passwd) == None:
-        return "ไม่สามารถใช้ภาษาไทยได้"
+        return "ไม่สามารถใช้ภาษาไทย หรือ อักขระพิเศษได้"
     elif re.match('^(?=\S{8,16}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])',passwd) == None:
-        return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว ตัวเล็กอย่างน้อย 1 ตัว และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
+        return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -73,6 +79,16 @@ def select_user():
     mydb.close()
     list_sql={ username : myresult}
     return list_sql
+
+def selectall_user():
+    mydb = connectsql()
+    mycursor = mydb.cursor(dictionary=True)
+    text_command = "SELECT * FROM user ;"
+    mycursor.execute(text_command)
+    myresult = mycursor.fetchall()
+    mydb.commit()
+    mydb.close()
+    return {"user": myresult}
 
 def update_user():
     mydb = connectsql()
@@ -120,20 +136,14 @@ def add_programtour():
 
 def select_programtour():
     mydb = connectsql()
-    data = request.json
-    id_tour = data['id_tour']
     try:
-        if id_tour == None:
-            return "กรุณา Login ก่อน"
-        else:
             mycursor = mydb.cursor(dictionary=True)
-            sql = "SELECT * FROM `tour` WHERE `id_tour` = {}".format(id_tour)
+            sql = "SELECT * FROM tour"
             mycursor.execute(sql, )
             A = mycursor.fetchall()
-            list_all = {id_tour : A}
             mydb.commit()
             mydb.close()
-            return list_all
+            return jsonify({"Tour":A})
     except Exception as e:
         return "เรียกข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
 
@@ -151,17 +161,34 @@ def put_programtour():
     date_travel_start = data['date_travel_start']
     date_travel_end = data['date_travel_end']
     id_country = data['id_country']
-    try:
-        mycursor = mydb.cursor(dictionary=True)
-        sql = "UPDATE `tour` SET `name_tour`= '{}' ,`price`={},`people_max`={},`details`='{}',`date_start`='{}',`date_end`='{}',`date_travel_start`='{}',`date_travel_end`='{}',`id_country`='{}' WHERE `id_tour`= {};"\
-            .format(name_tour,price,people_max,details,date_start,date_end,date_travel_start,date_travel_end,id_country,id_tour)
-        mycursor.execute(sql, )
-        print mycursor.rowcount, "Record Inserted."
-        mydb.commit()
-        mydb.close()
-        return "แก้ไขข้อมูลโปรแกรมทัวร์สำเร็จ"
-    except Exception as e:
-        return "แก้ไขข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+    test_data_1 = [name_tour, price, people_max, details, date_start, date_end, date_travel_start, date_travel_end,
+                   id_country]
+
+    # date_start_format = DStart
+    # date_end_format = DEnd
+    # date_travel_start_format = DTStart
+    # date_travel_end_format = DTEnd
+
+    DStart = datetime.datetime.strptime(date_start, "%Y-%m-%d")
+    DEnd = datetime.datetime.strptime(date_end, "%Y-%m-%d")
+    DTStart = datetime.datetime.strptime(date_travel_start, "%Y-%m-%d")
+    DTEnd = datetime.datetime.strptime(date_travel_end, "%Y-%m-%d")
+
+    if (check_data(test_data_1)):
+        return "กรอกข้อมูลไม่ครบ"
+    elif (check_date(DStart, DEnd, DTStart, DTEnd)):
+        return "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
+    else:
+        try:
+            mycursor = mydb.cursor(dictionary=True)
+            sql = "UPDATE `tour` SET `name_tour`= '{}' ,`price`={},`people_max`={},`details`='{}',`date_start`='{}',`date_end`='{}',`date_travel_start`='{}',`date_travel_end`='{}',`id_country`='{}' WHERE `id_tour`= {};"\
+                .format(name_tour,price,people_max,details,date_start,date_end,date_travel_start,date_travel_end,id_country,id_tour)
+            mycursor.execute(sql, )
+            mydb.commit()
+            mydb.close()
+            return "แก้ไขข้อมูลโปรแกรมทัวร์สำเร็จ"
+        except Exception as e:
+            return "แก้ไขข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
 
 def delete_programtour():
     mydb = connectsql()
@@ -204,3 +231,39 @@ def login():
         print(e)
         show = dict_meg.get(3)
         return Response(response=json.dumps({"meg": show}), status=203)
+
+def add_history():
+    mydb = connectsql()
+    data = request.json
+    id_user = data['id_user']
+    id_tour = data['id_tour']
+    status = data['status']
+    test_data_1 = [id_user,id_tour,status]
+
+    if (check_data(test_data_1)):
+        return "กรอกข้อมูลไม่ครบ"
+    else:
+        try:
+            mycursor = mydb.cursor(dictionary=True)
+            sql = "INSERT INTO `history`(`id_history`, `id_user`, `id_tour`, `date_booking`, `status`) VALUES (NULL,{},{},NULL,'{}');".format(id_user,id_tour,status)
+            mycursor.execute(sql, )
+            mydb.commit()
+            mydb.close()
+            return "เพิ่มข้อมูลการจองทัวร์สำเร็จ"
+        except Exception as e:
+            return "เพิ่มข้อมูลการจองไม่สำเร็จ"
+
+def select_history():
+    mydb = connectsql()
+    data = request.json
+    id_user = data['id_user']
+    try:
+        mycursor = mydb.cursor(dictionary=True)
+        sql = "SELECT date_booking,user.name,tour.name_tour,price,details,date_travel_start,date_travel_end,country.value FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.id_user = {};".format(id_user)
+        mycursor.execute(sql, )
+        result = mycursor.fetchall()
+        mydb.commit()
+        mydb.close()
+        return jsonify({"result" : result})
+    except Exception as e:
+        return "เรียกข้อมูลประวัติการจองทัวร์ไม่สำเร็จ"
