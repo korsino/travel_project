@@ -1,7 +1,6 @@
 import main
 from flask import Blueprint
 
-
 vm_routes = Blueprint('/controller', __name__)
 
 vm_routes.add_url_rule(
@@ -41,6 +40,12 @@ vm_routes.add_url_rule(
     methods=['GET'],
 )
 vm_routes.add_url_rule(
+    'allusers',
+    'selectall_user',
+    main.selectall_user,
+    methods=['GET'],
+)
+vm_routes.add_url_rule(
     'users',
     'update_users',
     main.update_user,
@@ -50,6 +55,18 @@ vm_routes.add_url_rule(
     'login',
     'login',
     main.login,
+    methods=['GET'],
+)
+vm_routes.add_url_rule(
+    'histories',
+    'histories',
+    main.add_history,
+    methods=['POST'],
+)
+vm_routes.add_url_rule(
+    'histories/get_history',
+    'histories/get_history',
+    main.select_history,
     methods=['GET'],
 )
 
