@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .app import app
 from .main.routing import vm_routes as vm_route
 

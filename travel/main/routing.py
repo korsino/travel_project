@@ -46,6 +46,12 @@ vm_routes.add_url_rule(
     main.update_user,
     methods=['PUT'],
 )
+vm_routes.add_url_rule(
+    'login',
+    'login',
+    main.login,
+    methods=['GET'],
+)
 
 
 

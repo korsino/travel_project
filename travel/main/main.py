@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from langdetect import detect_langs
+# from langdetect import detect_langs
 import mysql.connector
 import re
-from flask import Flask, request
+# import responses
+from flask import *
 
 #from yaml import load
 
@@ -43,8 +44,8 @@ def register_user():
         return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
         return "E-mail ไม่ถูกต้อง"
-    elif re.match('^[_a-z0-9-]$',username) == None:
-        return "ไม่สามารถใช้ภาษาไทยได้"
+    # elif re.match('^[_a-z0-9-]$',username) == None:
+        # return "ไม่สามารถใช้ภาษาไทยได้"
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -172,3 +173,27 @@ def delete_programtour():
         return "ลบข้อมูลโปรแกรมทัวร์สำเร็จ"
     except Exception as e:
         return "ลบข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+def login():
+    mydb = connectsql()
+    data = request.json
+    username = data['username']
+    password = data['passwd']
+    text_command = "SELECT passwd FROM `user` WHERE username = '{}'".format(username)
+    dict_meg = {1: "Success login.", 2: "Please login again.", 3: "Don't have this username.", 4: "Password is empty."};
+    try:
+        mydb.execute(text_command)
+        passwd = mydb.fetchone()
+        if (str(passwd.get('passwd')) == str(password)):
+            show = dict_meg.get(1)
+            status_code = 200
+        elif (str(password) == ""):
+            show = dict_meg.get(4)
+            status_code = 203
+        else:
+            show = dict_meg.get(2)
+            status_code = 203
+        return Response(response=json.dumps({"meg": show}), status=status_code)
+    except Exception as e:
+        print(e)
+        show = dict_meg.get(3)
+        return Response(response=json.dumps({"meg": show}), status=203)
