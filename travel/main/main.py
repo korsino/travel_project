@@ -2,7 +2,6 @@
 # from langdetect import detect_langs
 import mysql.connector
 import re
-# import responses
 from flask import *
 
 #from yaml import load
@@ -195,12 +194,12 @@ def login():
     password = data['passwd']
     text_command = "SELECT passwd FROM `user` WHERE username = '{}'".format(username)
     dict_meg = {1: "Success login.", 2: "Please login again.", 3: "Don't have this username.", 4: "Password is empty."};
-    print(username)
+    # print(username)
     try:
         mycursor.execute(text_command)
         passwd = mycursor.fetchone()
-        print(passwd)
-        print(str(passwd.get('passwd')) == str(password))
+        # print(passwd)
+        # print(str(passwd.get('passwd')) == str(password))
         if (str(passwd.get('passwd')) == str(password)):
             show = dict_meg.get(1)
             status_code = 200
