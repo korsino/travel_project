@@ -2,11 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="73b303fc-4c95-4e5a-be2d-1094bd76cd21" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Work5.1_wacc_driver.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Work5.1_wacc_driver.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/travel/main/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/travel/main/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/travel/main/routing.py" beforeDir="false" afterPath="$PROJECT_DIR$/travel/main/routing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/travel/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/travel/routes.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +41,8 @@
     </findStrings>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1RY1HBH8RrCtj8zbQbbyyWYY0XD" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -57,7 +57,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="restartRequiresConfirmation" value="false" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -233,7 +233,31 @@
       <workItem from="1569832303013" duration="9175000" />
       <workItem from="1569892890068" duration="5478000" />
       <workItem from="1569899320416" duration="517000" />
+      <workItem from="1569999506376" duration="9000" />
+      <workItem from="1569999539450" duration="1583000" />
     </task>
+    <task id="LOCAL-00001" summary="selectalluser">
+      <created>1569999893790</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1569999893790</updated>
+    </task>
+    <task id="LOCAL-00002" summary="selectalluser">
+      <created>1570000687974</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1570000687974</updated>
+    </task>
+    <task id="LOCAL-00003" summary="selectalluser">
+      <created>1570001563676</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1570001563676</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -244,17 +268,24 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="selectalluser" />
+    <option name="LAST_COMMIT_MESSAGE" value="selectalluser" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Driver$driver_run.coverage" NAME="driver_run Coverage Results" MODIFIED="1569899696427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Driver$register.coverage" NAME="register Coverage Results" MODIFIED="1569899702346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../Trevel" />
     <SUITE FILE_PATH="coverage/stop$main.coverage" NAME="main Coverage Results" MODIFIED="1569835766820" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Driver/mainDriver" />
     <SUITE FILE_PATH="coverage/stop$driver_run.coverage" NAME="driver_run Coverage Results" MODIFIED="1569841078780" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/travel_project$driver_run.coverage" NAME="driver_run Coverage Results" MODIFIED="1569999701875" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Driver$main.coverage" NAME="main Coverage Results" MODIFIED="1569894409124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Driver/mainDriver" />
   </component>
 </project>
