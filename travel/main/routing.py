@@ -28,5 +28,24 @@ vm_routes.add_url_rule(
     main.delete_programtour,
     methods=['DELETE'],
 )
+vm_routes.add_url_rule(
+    'register',
+    'register_users',
+    main.register_user,
+    methods=['POST'],
+)
+vm_routes.add_url_rule(
+    'users',
+    'select_user',
+    main.select_user,
+    methods=['GET'],
+)
+vm_routes.add_url_rule(
+    'users',
+    'update_users',
+    main.update_user,
+    methods=['PUT'],
+)
+
 
 

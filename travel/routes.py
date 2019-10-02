@@ -2,7 +2,7 @@ from .app import app
 from .main.routing import vm_routes as vm_route
 
 def root_endpoint():
-    return 'Hello.'
+    return 'ยินดีต้อนรับ พอเพียงทัวรี่'
 
 def init_routes():
     app.add_url_rule( '/',

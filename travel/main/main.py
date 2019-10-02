@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from langdetect import detect_langs
 import mysql.connector
+import re
 from flask import Flask, request
 
 #from yaml import load
@@ -16,12 +18,73 @@ def check_data(data):
 def connectsql():
         mydb = mysql.connector.connect(
         host='localhost',
-        port='3307',
+        port='3306',
         database='travel_db',
         user='root',
-        password='123459876',
+        password='',
         )
         return mydb
+def register_user():
+    mydb = connectsql()
+    data = request.json
+    username = data['username']
+    passwd = data['passwd']
+    name = data['name']
+    birthday = data['birthday']
+    email = data['email']
+    phone = data['phone']
+    address = data['address']
+    test_data = [username, passwd, name, address]
+    if (check_data(test_data)>0):
+        return "กรอกข้อมูลไม่ครบ"
+    elif len(passwd) <= 8:
+        return "ใส่รหัสผ่านมากกว่า 8 ตัว"
+    elif len(phone) != 10:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
+        return "E-mail ไม่ถูกต้อง"
+    elif re.match('^[_a-z0-9-]$',username) == None:
+        return "ไม่สามารถใช้ภาษาไทยได้"
+    else:
+        try:
+            mycursor = mydb.cursor(dictionary=True)
+            sql = "INSERT INTO user (id_user,username,passwd,name,birthday,email,phone,address ) VALUES (NULL,'{}','{}','{}','{}','{}','{}','{}');".format(username, passwd, name, birthday, email, phone, address)
+            mycursor.execute(sql, )
+            print mycursor.rowcount, "record inserted."
+            mydb.commit()
+            mydb.close()
+            return "สมัครสมาชิกสำเร็จ"
+        except Exception as e:
+            return "มี username อยู่แล้ว"
+
+def select_user():
+    mydb = connectsql()
+    data = request.json
+    username = data['username']
+    mycursor = mydb.cursor(dictionary=True)
+    text_command = "SELECT * FROM user WHERE username = '{}';".format(username)
+    mycursor.execute(text_command)
+    myresult = mycursor.fetchall()
+    mydb.commit()
+    mydb.close()
+    list_sql={ username : myresult}
+    return list_sql
+
+def update_user():
+    mydb = connectsql()
+    data = request.json
+    username = data['username']
+    name = data['name']
+    birthday = data['birthday']
+    email = data['email']
+    phone = data['phone']
+    address = data['address']
+    mycursor = mydb.cursor(dictionary=True)
+    sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
+    mycursor.execute(sql)
+    mydb.commit()
+    mydb.close()
+    return "แก้ไขข้อมูลสำเร็จ"
 
 def add_programtour():
     mydb = connectsql()
