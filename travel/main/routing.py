@@ -1,7 +1,6 @@
 import main
 from flask import Blueprint
 
-
 vm_routes = Blueprint('/controller', __name__)
 
 vm_routes.add_url_rule(
@@ -38,6 +37,12 @@ vm_routes.add_url_rule(
     'users',
     'select_user',
     main.select_user,
+    methods=['GET'],
+)
+vm_routes.add_url_rule(
+    'allusers',
+    'selectall_user',
+    main.selectall_user,
     methods=['GET'],
 )
 vm_routes.add_url_rule(

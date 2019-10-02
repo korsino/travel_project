@@ -75,6 +75,16 @@ def select_user():
     list_sql={ username : myresult}
     return list_sql
 
+def selectall_user():
+    mydb = connectsql()
+    mycursor = mydb.cursor(dictionary=True)
+    text_command = "SELECT * FROM user ;"
+    mycursor.execute(text_command)
+    myresult = mycursor.fetchall()
+    mydb.commit()
+    mydb.close()
+    return {"user": myresult}
+
 def update_user():
     mydb = connectsql()
     data = request.json
