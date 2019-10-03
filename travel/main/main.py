@@ -107,12 +107,13 @@ def update_user():
         return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email) == None:
         return "E-mail ไม่ถูกต้อง"
-    mycursor = mydb.cursor(dictionary=True)
-    sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
-    mycursor.execute(sql)
-    mydb.commit()
-    mydb.close()
-    return "แก้ไขข้อมูลสำเร็จ"
+    else:
+        mycursor = mydb.cursor(dictionary=True)
+        sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
+        mycursor.execute(sql)
+        mydb.commit()
+        mydb.close()
+        return "แก้ไขข้อมูลสำเร็จ"
 
 def add_programtour():
     mydb = connectsql()
