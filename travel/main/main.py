@@ -49,6 +49,8 @@ def register_user():
         return "ใส่รหัสผ่านมากกว่า 8 ตัว แต่ไม่เกิน 16 ตัว"
     elif len(phone) != 10:
         return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^([-_.0-9]+)$', phone) == None:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
         return "E-mail ไม่ถูกต้อง"
     elif re.match('^([-_.a-zA-Z0-9]+)$',username) == None:
@@ -99,6 +101,12 @@ def update_user():
     email = data['email']
     phone = data['phone']
     address = data['address']
+    if len(phone) != 10:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^([-_.0-9]+)$', phone) == None:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email) == None:
+        return "E-mail ไม่ถูกต้อง"
     mycursor = mydb.cursor(dictionary=True)
     sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
     mycursor.execute(sql)

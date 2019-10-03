@@ -28,7 +28,7 @@ vm_routes.add_url_rule(
     methods=['DELETE'],
 )
 vm_routes.add_url_rule(
-    'register',
+    'users',
     'register_users',
     main.register_user,
     methods=['POST'],

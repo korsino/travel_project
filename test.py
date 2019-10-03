@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 import re
 
-addressToVerify ='infoemailhippocom'
-match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)
+addressToVerify ='76868687'
+match = re.match('^([-_.0-9]+)$', addressToVerify)
 
 if match == None:
 	print('Bad Syntax')
