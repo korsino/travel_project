@@ -316,3 +316,4 @@ def edit_password():
     except Exception as e:
         print(e)
         return Response(response=json.dumps({"meg": dict_meg.get(4)}), status=203)
+

@@ -28,7 +28,7 @@ vm_routes.add_url_rule(
     methods=['DELETE'],
 )
 vm_routes.add_url_rule(
-    'register',
+    'users',
     'register_users',
     main.register_user,
     methods=['POST'],
@@ -69,6 +69,11 @@ vm_routes.add_url_rule(
     main.select_history,
     methods=['GET'],
 )
-
+vm_routes.add_url_rule(
+    'users/password/edit',
+    'users/password/edit',
+    main.edit_password,
+    methods=['PUT'],
+)
 
 
