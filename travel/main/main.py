@@ -231,7 +231,7 @@ def login():
     username = data['username']
     password = data['passwd']
     text_command = "SELECT passwd FROM `user` WHERE username = '{}'".format(username)
-    dict_meg = {1: "Success login.", 2: "Please login again.", 3: "Don't have this username.", 4: "Password is empty."};
+    dict_meg = {1: "เข้าสู่ระบบสำเร็จ", 2: "Username หรือ Password ผิดพลาด", 3: "Username หรือ Password ผิดพลาด", 4: "โปรดใส่รหัสผ่าน"};
     # print(username)
     try:
         mycursor.execute(text_command)
@@ -239,19 +239,24 @@ def login():
         # print(passwd)
         # print(str(passwd.get('passwd')) == str(password))
         if (str(passwd.get('passwd')) == str(password)):
-            show = dict_meg.get(1)
-            status_code = 200
+            # show = "เข้าสู่ระบบสำเเร็จ"
+            # status_code = 200
+            return "เข้าสู่ระบบสำเร็จ"
+
         elif (str(password) == ""):
-            show = dict_meg.get(4)
-            status_code = 203
+            # show = dict_meg.get(4)
+            # status_code = 203
+            return "โปรดใส่รหัสผ่าน"
         else:
-            show = dict_meg.get(2)
-            status_code = 203
-        return Response(response=json.dumps({"meg": show}), status=status_code)
+            return "Username หรือ Password ผิดพลาด"
+            # show = dict_meg.get(2)
+            # status_code = 203
+        # return Response(response=json.dumps({"meg": show}), status=status_code)
     except Exception as e:
         print(e)
-        show = dict_meg.get(3)
-        return Response(response=json.dumps({"meg": show}), status=203)
+        return "Username หรือ Password ผิดพลาด"
+        # show = dict_meg.get(3)
+        # return Response(response=json.dumps({"meg": show}), status=203)
 
 def add_history():
     mydb = connectsql()
