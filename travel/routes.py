@@ -11,5 +11,5 @@ def init_routes():
                       root_endpoint,
                       methods=['GET'],
                     )
-    app.register_blueprint(vm_route, url_prefix="/")
+    app.register_blueprint(vm_route, url_prefix="/api/v1/")
 
