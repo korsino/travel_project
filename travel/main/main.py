@@ -17,7 +17,7 @@ def check_data(data):
     return sum
 
 def check_date(D_Start, D_End, DT_Start, DT_End):
-    if D_Start > D_End or D_Start > DT_Start or D_Start > DT_End or D_End < DT_Start or D_End > DT_End or DT_Start > DT_End:
+    if D_Start > D_End or D_Start > DT_Start or D_Start > DT_End or D_End > DT_Start or D_End > DT_End or DT_Start > DT_End:
         A = "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
         return A
     else:
@@ -128,9 +128,20 @@ def add_programtour():
     date_travel_end = data['date_travel_end']
     id_country = data['id_country']
     test_data_1 = [name_tour,price,people_max,details,date_start,date_end,date_travel_start,date_travel_end,id_country]
+    # date_start_format = DStart
+    # date_end_format = DEnd
+    # date_travel_start_format = DTStart
+    # date_travel_end_format = DTEnd
+
+    DStart = datetime.datetime.strptime(date_start, "%Y-%m-%d")
+    DEnd = datetime.datetime.strptime(date_end, "%Y-%m-%d")
+    DTStart = datetime.datetime.strptime(date_travel_start, "%Y-%m-%d")
+    DTEnd = datetime.datetime.strptime(date_travel_end, "%Y-%m-%d")
     try:
         if (check_data(test_data_1)):
             return "กรอกข้อมูลไม่ครบ"
+        elif (check_date(DStart, DEnd, DTStart, DTEnd)):
+            return "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
         else:
             mycursor = mydb.cursor(dictionary=True)
             sql = "INSERT INTO tour (id_tour, name_tour, price, people_max, details, date_start, date_end, date_travel_start, date_travel_end, id_country) VALUES " \
