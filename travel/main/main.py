@@ -17,7 +17,7 @@ def check_data(data):
     return sum
 
 def check_date(D_Start, D_End, DT_Start, DT_End):
-    if D_Start > D_End or D_Start > DT_Start or D_Start > DT_End or D_End < DT_Start or D_End < DT_End or DT_Start > DT_End:
+    if D_Start > D_End or D_Start > DT_Start or D_Start > DT_End or D_End < DT_Start or D_End > DT_End or DT_Start > DT_End:
         A = "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
         return A
     else:
@@ -48,6 +48,8 @@ def register_user():
     elif len(passwd) <= 8 or len(passwd) >= 16:
         return "ใส่รหัสผ่านมากกว่า 8 ตัว แต่ไม่เกิน 16 ตัว"
     elif len(phone) != 10:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^([-_.0-9]+)$', phone) == None:
         return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
         return "E-mail ไม่ถูกต้อง"
@@ -99,12 +101,19 @@ def update_user():
     email = data['email']
     phone = data['phone']
     address = data['address']
-    mycursor = mydb.cursor(dictionary=True)
-    sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
-    mycursor.execute(sql)
-    mydb.commit()
-    mydb.close()
-    return "แก้ไขข้อมูลสำเร็จ"
+    if len(phone) != 10:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^([-_.0-9]+)$', phone) == None:
+        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email) == None:
+        return "E-mail ไม่ถูกต้อง"
+    else:
+        mycursor = mydb.cursor(dictionary=True)
+        sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
+        mycursor.execute(sql)
+        mydb.commit()
+        mydb.close()
+        return "แก้ไขข้อมูลสำเร็จ"
 
 def add_programtour():
     mydb = connectsql()
@@ -203,6 +212,7 @@ def delete_programtour():
         return "ลบข้อมูลโปรแกรมทัวร์สำเร็จ"
     except Exception as e:
         return "ลบข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+
 def login():
     mydb = connectsql()
     mycursor = mydb.cursor(dictionary=True)
@@ -245,7 +255,8 @@ def add_history():
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
-            sql = "INSERT INTO `history`(`id_history`, `id_user`, `id_tour`, `date_booking`, `status`) VALUES (NULL,{},{},NULL,'{}');".format(id_user,id_tour,status)
+            sql = "INSERT INTO `history`(`id_history`, `id_user`, `id_tour`, `date_booking`, `status`) VALUES (NULL,{},{},NULL,'{}');".format(id_user,id_tour,
+                                                                                                                                                      status)
             mycursor.execute(sql, )
             mydb.commit()
             mydb.close()
@@ -259,7 +270,7 @@ def select_history():
     id_user = data['id_user']
     try:
         mycursor = mydb.cursor(dictionary=True)
-        sql = "SELECT date_booking,user.name,tour.name_tour,price,details,date_travel_start,date_travel_end,country.value FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.id_user = {};".format(id_user)
+        sql = "SELECT date_booking,user.name,tour.name_tour,price,details,date_travel_start,date_travel_end,country.value,history.status FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.id_user = {};".format(id_user)
         mycursor.execute(sql, )
         result = mycursor.fetchall()
         mydb.commit()
@@ -267,3 +278,41 @@ def select_history():
         return jsonify({"result" : result})
     except Exception as e:
         return "เรียกข้อมูลประวัติการจองทัวร์ไม่สำเร็จ"
+
+def edit_password():
+
+    dict_meg = {1:"Success.",2:"Fail.",3:"Old password is wrong",4:"Don't have this username."};
+    mydb = connectsql()
+    data = request.json
+    username = data['username']
+    passwd = data['passwd']
+    new_password = data['new_password']
+    cheak_new_password = data['cheak_new_password']
+    try:
+        mycursor = mydb.cursor(dictionary=True)
+        sql = "SELECT passwd FROM user WHERE username = '{}';".format(username)
+        mycursor.execute(sql)
+        cheak_passwd = mycursor.fetchone()
+        if re.match('^(?=\S{8,16}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])', new_password) == None:
+            return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
+        elif new_password != cheak_new_password:
+            return "รหัสผ่านใหม่ไม่ตรงกัน"
+        else:
+            dict = {'username': username, 'passwd': passwd, 'new_password': new_password}
+            for i in dict:
+                if (dict.get(i) == ""):
+                    return Response(response=json.dumps({"meg": "{} is empty".format(i)}), status=203)
+                    print new_password + "1"
+                elif (passwd == cheak_passwd.get('passwd')):
+                    sql_update = "UPDATE user SET passwd ='{}' WHERE username = '{}';".format(new_password, username)
+                    mycursor.execute(sql_update)
+                    mydb.commit()
+                    return Response(response=json.dumps({"meg": dict_meg.get(1)}), status=200)
+                else:
+                    return Response(response=json.dumps({"meg": dict_meg.get(3)}), status=203)
+                    print new_password + "3"
+            mydb.close()
+
+    except Exception as e:
+        print(e)
+        return Response(response=json.dumps({"meg": dict_meg.get(4)}), status=203)
