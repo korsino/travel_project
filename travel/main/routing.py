@@ -4,7 +4,7 @@ from flask import Blueprint
 vm_routes = Blueprint('/controller', __name__)
 
 vm_routes.add_url_rule(
-    'tour/create_tour',
+    'tour',
     'tour/create_tour',
     main.add_programtour,
     methods=['POST'],
@@ -16,13 +16,13 @@ vm_routes.add_url_rule(
     methods=['GET'],
 )
 vm_routes.add_url_rule(
-    'tour/edit_tour',
+    'tour',
     'tour/edit_tour',
     main.put_programtour,
     methods=['PUT'],
 )
 vm_routes.add_url_rule(
-    'tour/delete_tour',
+    'tour',
     'tour/delete_tour',
     main.delete_programtour,
     methods=['DELETE'],
@@ -55,7 +55,7 @@ vm_routes.add_url_rule(
     'login',
     'login',
     main.login,
-    methods=['GET'],
+    methods=['POST'],
 )
 vm_routes.add_url_rule(
     'histories',
@@ -64,16 +64,26 @@ vm_routes.add_url_rule(
     methods=['POST'],
 )
 vm_routes.add_url_rule(
-    'histories/get_history',
+    'histories',
     'histories/get_history',
     main.select_history,
     methods=['GET'],
 )
 vm_routes.add_url_rule(
-    'users/password/edit',
+    'login',
     'users/password/edit',
     main.edit_password,
     methods=['PUT'],
 )
-
-
+vm_routes.add_url_rule(
+    'report',
+    'report_tour',
+    main.report_tour,
+    methods=['GET'],
+)
+vm_routes.add_url_rule(
+    'histories',
+    'histories/update_history',
+    main.update_history,
+    methods=['PUT'],
+)
