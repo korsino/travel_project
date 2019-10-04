@@ -6,7 +6,6 @@ from flask import *
 
 import datetime
 
-
 def check_data(data):
     sum=0
     for i in data :
@@ -47,7 +46,7 @@ def check_data_phone(data_phone,phone):
 def check_date(D_Start, D_End, DT_Start, DT_End):
     if D_Start > D_End or D_Start > DT_Start or D_Start > DT_End or D_End > DT_Start or D_End > DT_End or DT_Start > DT_End:
         A = "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
-        return A
+        return jsonify({"msg" : A})
     else:
         return None
 
@@ -60,6 +59,7 @@ def connectsql():
         password='',
         )
         return mydb
+
 def register_user():
     mydb = connectsql()
     mydb1 = connectsql()
@@ -72,6 +72,7 @@ def register_user():
     data = request.json
     username = data['username']
     passwd = data['passwd']
+    check_passwd = data['check_passwd']
     name = data['name']
     birthday = data['birthday']
     email = data['email']
@@ -83,25 +84,27 @@ def register_user():
     # print check_data_username(myresult1,username)
     test_data = [username, passwd, name, address]
     if (check_data(test_data)>0):
-        return "กรอกข้อมูลไม่ครบ"
+        return jsonify({"msg" : "กรอกข้อมูลไม่ครบ"})
     elif check_data_username(myresult1,username) > 0:
-        return "มี username อยู่แล้ว"
+        return jsonify({"msg" : "มี username อยู่แล้ว"})
     elif re.match('^([-_.a-zA-Z0-9]+)$',username) == None:
-        return "ไม่สามารถใช้ภาษาไทย หรือ อักขระพิเศษได้"
+        return jsonify({"msg" : "ไม่สามารถใช้ภาษาไทย หรือ อักขระพิเศษได้"})
     elif len(passwd) <= 8 or len(passwd) >= 16:
-        return "ใส่รหัสผ่านมากกว่า 8 ตัว แต่ไม่เกิน 16 ตัว"
+        return jsonify({"msg" : "ใส่รหัสผ่านมากกว่า 8 ตัว แต่ไม่เกิน 16 ตัว"})
     elif re.match('^(?=\S{8,16}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])',passwd) == None:
-        return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
+        return jsonify({"msg" : "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"})
+    elif passwd != check_passwd:
+        return jsonify({"msg" : "รหัสผ่านไม่เหมือนกัน"})
     elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
-        return "E-mail ไม่ถูกต้อง"
+        return jsonify({"msg" : "E-mail ไม่ถูกต้อง"})
     elif check_data_email(myresult1,email) > 0:
-        return "มี E-mail อยู่แล้ว"
+        return jsonify({"msg" : "มี E-mail อยู่แล้ว"})
     elif len(phone) != 10:
-        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+        return jsonify({"msg" : "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"})
     elif re.match('^([-_.0-9]+)$', phone) == None:
-        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+        return jsonify({"msg" : "หมายเลขโทรศัพต้องเป็น 0 - 9"})
     elif check_data_phone(myresult1,phone) > 0:
-        return "มีเบอร์โทรศัพท์นี้อยู่แล้ว"
+        return jsonify({"msg" : "มีเบอร์โทรศัพท์นี้อยู่แล้ว"})
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -109,22 +112,29 @@ def register_user():
             mycursor.execute(sql, )
             mydb.commit()
             mydb.close()
-            return "สมัครสมาชิกสำเร็จ"
+            return jsonify({"msg" : "สมัครสมาชิกสำเร็จ"})
         except Exception as e:
-            return "ผิด"
+            return jsonify({"msg" : "ผิด"})
 
 def select_user():
     mydb = connectsql()
     # data = request.json
     username = request.args['username']
-    mycursor = mydb.cursor(dictionary=True)
-    text_command = "SELECT * FROM user WHERE username = '{}';".format(username)
-    mycursor.execute(text_command)
-    myresult = mycursor.fetchall()
-    mydb.commit()
-    mydb.close()
-    list_sql={ username : myresult}
-    return list_sql
+    try:
+        mycursor = mydb.cursor(dictionary=True)
+        text_command = "SELECT * FROM user WHERE username = '{}';".format(username)
+        mycursor.execute(text_command)
+        myresult = mycursor.fetchall()
+        mydb.commit()
+        mydb.close()
+        list_user=jsonify({ username : myresult})
+        if len(myresult) == 0:
+            return jsonify({"msg": "ไม่พบข้อมูลในระบบ"})
+        else:
+            return list_user
+    except Exception as e:
+        return jsonify({"msg": "ข้อมูลผิดพลาด"})
+
 
 def selectall_user():
     mydb = connectsql()
@@ -134,10 +144,12 @@ def selectall_user():
     myresult = mycursor.fetchall()
     mydb.commit()
     mydb.close()
-    return {"user": myresult}
+    return jsonify({"All_user": myresult})
 
 def update_user():
     mydb = connectsql()
+    mydb1 = connectsql()
+
     data = request.json
     username = data['username']
     name = data['name']
@@ -145,12 +157,26 @@ def update_user():
     email = data['email']
     phone = data['phone']
     address = data['address']
-    if len(phone) != 10:
-        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
+    mycursor1 = mydb1.cursor(dictionary=True)
+    sql1 = "SELECT * FROM user where username != '{}';".format(username)
+    mycursor1.execute(sql1)
+    myresult1 = mycursor1.fetchall()
+    mydb1.commit()
+    mydb1.close()
+    if check_data_username(myresult1,username) > 0:
+        return jsonify({"msg" : "มี username อยู่แล้ว"})
+    elif re.match('^([-_.a-zA-Z0-9]+)$',username) == None:
+        return jsonify({"msg" : "ไม่สามารถใช้ภาษาไทย หรือ อักขระพิเศษได้"})
+    elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$',email) == None:
+        return jsonify({"msg" : "E-mail ไม่ถูกต้อง"})
+    elif check_data_email(myresult1,email) > 0:
+        return jsonify({"msg" : "มี E-mail อยู่แล้ว"})
+    elif len(phone) != 10:
+        return jsonify({"msg" : "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"})
     elif re.match('^([-_.0-9]+)$', phone) == None:
-        return "ใส่หมายเลขโทรศัพให้ครบ 10 ตัว"
-    elif re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email) == None:
-        return "E-mail ไม่ถูกต้อง"
+        return jsonify({"msg" : "หมายเลขโทรศัพต้องเป็น 0 - 9"})
+    elif check_data_phone(myresult1,phone) > 0:
+        return jsonify({"msg" : "มีเบอร์โทรศัพท์นี้อยู่แล้ว"})
     else:
         mycursor = mydb.cursor(dictionary=True)
         sql = "update user set  name= '{}',birthday= '{}',email= '{}',phone= '{}',address= '{}' where username = '{}';".format(name,birthday,email,phone,address,username)
@@ -159,116 +185,12 @@ def update_user():
             mycursor.execute(sql)
             mydb.commit()
             mydb.close()
-            return "แก้ไขข้อมูลสำเร็จ"
+            return jsonify({"msg" : "แก้ไขข้อมูลสำเร็จ"})
         except Exception as e:
             print(e)
             # return Response(response=json.dumps({"meg": "ไมมีuser nameนี้"}), status=203)
-            return Response(response=json.dumps({"meg": "don't havve this username"}), status=203)
+            return Response(response=json.dumps({"msg": "don't havve this username"}), status=203)
 
-def report_tour():
-    mydb = connectsql()
-    mydb1 = connectsql()
-    data = request.json
-    date_start = data['date']
-    date_time_now = datetime.datetime.now()
-    Y_ear = date_start.split("-")[0]
-    M_onth = date_start.split("-")[1]
-    D_ay =  date_start.split("-")[2]
-    mycursor = mydb.cursor(dictionary=True)
-    mycursor1 = mydb1.cursor(dictionary=True)
-    # ปี : เดือน : วัน
-    if Y_ear != "00" and M_onth != "00" and D_ay != "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE date(history.date_booking) = '{}' AND history.status='not paid';".format(date_start)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE date(history.date_booking) = '{}' AND history.status='paid';".format(date_start)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay" : myresult},{"paid": myresult1 }]))
-    # ปี : วัน
-    elif Y_ear != "00" and M_onth == "00" and D_ay != "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND DAY(date(history.date_booking)) = '{}' AND history.status='not paid';".format(Y_ear,D_ay)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND DAY(date(history.date_booking)) = '{}' AND history.status='paid';".format(Y_ear,D_ay)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
-    # ปี : เดือน
-    elif Y_ear != "00" and M_onth != "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND MONTH(date(history.date_booking)) = '{}' AND history.status='not paid';".format(Y_ear,M_onth)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND MONTH(date(history.date_booking)) = '{}' AND history.status='paid';".format(Y_ear,M_onth)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
-    # เดือน : วัน
-    elif Y_ear != "00" and M_onth != "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth,D_ay)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='paid';".format(M_onth,D_ay)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
-    # ปี
-    elif Y_ear != "00" and M_onth == "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth,D_ay)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND history.status='paid';".format(Y_ear)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
-    # เดือน
-    elif Y_ear == "00" and M_onth != "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='paid';".format(M_onth)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
-    # วัน
-    elif Y_ear == "00" and M_onth == "00" and D_ay != "00":
-        sql = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE DAY(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth)
-        sql1 = "SELECT COUNT(status) as NUM_OF_RESERVE FROM history WHERE DAY(date(history.date_booking)) = '{}' AND history.status='paid';".format(M_onth)
-        mycursor.execute(sql)
-        mycursor1.execute(sql1)
-        myresult = mycursor.fetchall()
-        myresult1 = mycursor1.fetchall()
-        mydb.commit()
-        mydb.close()
-        mydb1.commit()
-        mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
-    else:
-        return "ผิด"
 def add_programtour():
     mydb = connectsql()
     data = request.json
@@ -293,15 +215,15 @@ def add_programtour():
     DTEnd = datetime.datetime.strptime(date_travel_end, "%Y-%m-%d")
     try:
         if (check_data(test_data_1)):
-            return "กรอกข้อมูลไม่ครบ"
+            return jsonify({"msg" : "กรอกข้อมูลไม่ครบ"})
         elif (check_date(DStart, DEnd, DTStart, DTEnd)):
-            return "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
-        elif re.match('^([0-9]+)$', price or people_max) == None:
-            return "ระบุราคาเป็นตัวเลขเท่านั้น"
+            return jsonify({"msg" : "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"})
+        elif re.match('^([0-9]+)$', str(price) or str(people_max)) == None:
+            return jsonify({"msg" : "ระบุราคาเป็นตัวเลขเท่านั้น"})
         elif re.match('^([A-Z]+)$', id_country) == None:
-            return "กรุณากรอกเป็นภาษาอังกฤษ ตัวพิมพ์ใหญ่"
+            return jsonify({"msg" : "กรุณากรอกเป็นภาษาอังกฤษ ตัวพิมพ์ใหญ่"})
         elif len(id_country) != 2:
-            return "กรอกข้อมูลไม่เกิน 2 ตัว"
+            return jsonify({"msg" : "กรอกข้อมูลไม่เกิน 2 ตัว"})
         else:
             mycursor = mydb.cursor(dictionary=True)
             sql = "INSERT INTO tour (id_tour, name_tour, price, people_max, details, date_start, date_end, date_travel_start, date_travel_end, id_country) VALUES " \
@@ -309,9 +231,9 @@ def add_programtour():
             mycursor.execute(sql, )
             mydb.commit()
             mydb.close()
-            return "เพิ่มข้อมูลโปรแกรมทัวร์สำเร็จ"
+            return jsonify({"msg" : "เพิ่มข้อมูลโปรแกรมทัวร์สำเร็จ"})
     except Exception as e:
-        return "เพิ่มข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+        return jsonify({"msg" : "เพิ่มข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"})
 
 def select_programtour():
     mydb = connectsql()
@@ -324,7 +246,7 @@ def select_programtour():
             mydb.close()
             return jsonify({"Tour":A})
     except Exception as e:
-        return "เรียกข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+        return jsonify({"msg" : "เรียกข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"})
 
 
 def put_programtour():
@@ -354,15 +276,15 @@ def put_programtour():
     DTEnd = datetime.datetime.strptime(date_travel_end, "%Y-%m-%d")
 
     if (check_data(test_data_1)):
-        return "กรอกข้อมูลไม่ครบ"
+        return jsonify({"msg" : "กรอกข้อมูลไม่ครบ"})
     elif (check_date(DStart, DEnd, DTStart, DTEnd)):
-        return "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"
-    elif re.match('^([0-9]+)$', price or people_max) == None:
-        return "ระบุราคาเป็นตัวเลขเท่านั้น"
+        return jsonify({"msg" : "ข้อมูลวันท่องเที่ยวผิดพลาด โปรดตรวจสอบใหม่อีกครั้ง"})
+    elif re.match('^([0-9]+)$', str(price) or str(people_max)) == None:
+        return jsonify({"msg" : "ระบุราคาเป็นตัวเลขเท่านั้น"})
     elif re.match('^([A-Z]+)$', id_country) == None:
-        return "กรุณากรอกเป็นภาษาอังกฤษ ตัวพิมพ์ใหญ่"
+        return jsonify({"msg" : "กรุณากรอกเป็นภาษาอังกฤษ ตัวพิมพ์ใหญ่"})
     elif len(id_country) != 2:
-        return "กรอกข้อมูลไม่เกิน 2 ตัว"
+        return jsonify({"msg" : "กรอกข้อมูลไม่เกิน 2 ตัว"})
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -371,9 +293,9 @@ def put_programtour():
             mycursor.execute(sql, )
             mydb.commit()
             mydb.close()
-            return "แก้ไขข้อมูลโปรแกรมทัวร์สำเร็จ"
+            return jsonify({"msg" : "แก้ไขข้อมูลโปรแกรมทัวร์สำเร็จ"})
         except Exception as e:
-            return "แก้ไขข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+            return jsonify({"msg" : "แก้ไขข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"})
 
 def delete_programtour():
     mydb = connectsql()
@@ -385,9 +307,9 @@ def delete_programtour():
         mycursor.execute(sql, )
         mydb.commit()
         mydb.close()
-        return "ลบข้อมูลโปรแกรมทัวร์สำเร็จ"
+        return jsonify({"msg" : "ลบข้อมูลโปรแกรมทัวร์สำเร็จ"})
     except Exception as e:
-        return "ลบข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"
+        return jsonify({"msg" : "ลบข้อมูลโปรแกรมทัวร์ไม่สำเร็จ"})
 
 def login():
     mydb = connectsql()
@@ -427,14 +349,32 @@ def login():
 
 def add_history():
     mydb = connectsql()
+    mydb1 = connectsql()
+    mydb2 = connectsql()
     data = request.json
     id_user = data['id_user']
     id_tour = data['id_tour']
     status = data['status']
+    mycursor1 = mydb1.cursor(dictionary=True)
+    sql1 = "SELECT COUNT(id_tour) as '{}' FROM history;".format(id_tour)
+    mycursor1.execute(sql1)
+    myresult1 = mycursor1.fetchall()
+    mydb1.commit()
+    mydb1.close()
+    mycursor2 = mydb2.cursor(dictionary=True)
+    sql2 = "SELECT people_max FROM tour WHERE id_tour = {} ;".format(id_tour)
+    mycursor2.execute(sql2)
+    myresult2 = mycursor2.fetchall()
+    mydb2.commit()
+    mydb2.close()
+    test = int(myresult1[0][str(id_tour)])
+    test1 = int(myresult2[0]["people_max"])
     test_data_1 = [id_user,id_tour,status]
-
     if (check_data(test_data_1)):
-        return "กรอกข้อมูลไม่ครบ"
+        return jsonify({"msg" : "กรอกข้อมูลไม่ครบ"})
+    elif test>test1:
+        return jsonify({"msg" : "เต็ม"})
+    # elif test
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -443,9 +383,9 @@ def add_history():
             mycursor.execute(sql, )
             mydb.commit()
             mydb.close()
-            return "เพิ่มข้อมูลการจองทัวร์สำเร็จ"
+            return jsonify({"msg" : "เพิ่มข้อมูลการจองทัวร์สำเร็จ"})
         except Exception as e:
-            return "เพิ่มข้อมูลการจองไม่สำเร็จ"
+            return jsonify({"msg" : "เพิ่มข้อมูลการจองไม่สำเร็จ"})
 
 def select_history():
     mydb = connectsql()
@@ -460,7 +400,7 @@ def select_history():
         mydb.close()
         return jsonify({"result" : result})
     except Exception as e:
-        return "เรียกข้อมูลประวัติการจองทัวร์ไม่สำเร็จ"
+        return jsonify({"msg" : "เรียกข้อมูลประวัติการจองทัวร์ไม่สำเร็จ"})
 
 def update_history():
     mydb = connectsql()
@@ -470,7 +410,7 @@ def update_history():
     test_data_1 = [id_history, status]
 
     if (check_data(test_data_1) > 0):
-        return "กรอกข้อมูลไม่ครบ"
+        return jsonify({"msg" : "กรอกข้อมูลไม่ครบ"})
     else:
         try:
             mycursor = mydb.cursor(dictionary=True)
@@ -478,7 +418,7 @@ def update_history():
             mycursor.execute(sql)
             mydb.commit()
             mydb.close()
-            return "แก้ไขข้อมูลสำเร็จ"
+            return jsonify({"msg" : "แก้ไขข้อมูลสำเร็จ"})
         except Exception as e:
             return str(e)
 
@@ -497,23 +437,21 @@ def edit_password():
         mycursor.execute(sql)
         check_passwd = mycursor.fetchone()
         if re.match('^(?=\S{8,16}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])', new_password) == None:
-            return "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"
+            return jsonify({"msg" : "รหัสผ่านควรมีตัวเลข ตัวอักษรตัวใหญ่อย่างน้อย 1 ตัว(A-Z) ตัวเล็กอย่างน้อย 1 ตัว(a-z) และมีอักขระพิเศษอย่างน้อย  1 ตัว (!@#$%^&*()_+|~-=\\`{}[]:\";'<>?,./)'"})
         elif new_password != check_new_password:
-            return "รหัสผ่านใหม่ไม่ตรงกัน"
+            return jsonify({"msg" : "รหัสผ่านใหม่ไม่ตรงกัน"})
         else:
             dict = {'username': username, 'passwd': passwd, 'new_password': new_password}
             for i in dict:
                 if (dict.get(i) == ""):
-                    return Response(response=json.dumps({"meg": "{} is empty".format(i)}), status=203)
-                    print new_password + "1"
+                    return Response(response=json.dumps({"msg": "{} is empty".format(i)}), status=203)
                 elif (passwd == check_passwd.get('passwd')):
                     sql_update = "UPDATE user SET passwd ='{}' WHERE username = '{}';".format(new_password, username)
                     mycursor.execute(sql_update)
                     mydb.commit()
-                    return Response(response=json.dumps({"meg": dict_meg.get(1)}), status=200)
+                    return Response(response=json.dumps({"msg": dict_meg.get(1)}), status=200)
                 else:
-                    return Response(response=json.dumps({"meg": dict_meg.get(3)}), status=203)
-                    print new_password + "3"
+                    return Response(response=json.dumps({"msg": dict_meg.get(3)}), status=203)
             mydb.close()
 
     except Exception as e:
@@ -523,6 +461,7 @@ def edit_password():
 def report_tour():
     mydb = connectsql()
     mydb1 = connectsql()
+    mydb2 = connectsql()
     # data = request.json
     date_start = request.args['date']
     date_time_now = datetime.datetime.now()
@@ -531,96 +470,144 @@ def report_tour():
     D_ay =  date_start.split("-")[2]
     mycursor = mydb.cursor(dictionary=True)
     mycursor1 = mydb1.cursor(dictionary=True)
+    mycursor2 = mydb2.cursor(dictionary=True)
     # ปี : เดือน : วัน
     if Y_ear != "00" and M_onth != "00" and D_ay != "00":
-        sql = "SELECT COUNT(status) FROM history WHERE date(history.date_booking) = '{}' AND history.status='not paid';".format(date_start)
-        sql1 = "SELECT COUNT(status) FROM history WHERE date(history.date_booking) = '{}' AND history.status='paid';".format(date_start)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_pay FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and date(date_booking) = '{}'".format(date_start)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid  FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and date(date_booking) = '{}'".format(date_start)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE date(date_booking) = '{}'".format(date_start)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay" : myresult},{"paid": myresult1 }]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg" : myresult + myresult1 + myresult2})
     # ปี : วัน
     elif Y_ear != "00" and M_onth == "00" and D_ay != "00":
-        sql = "SELECT COUNT(status) FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND DAY(date(history.date_booking)) = '{}' AND history.status='not paid';".format(Y_ear,D_ay)
-        sql1 = "SELECT COUNT(status) FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND DAY(date(history.date_booking)) = '{}' AND history.status='paid';".format(Y_ear,D_ay)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_pay FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and YEAR(date(date_booking)) = '{}' AND DAY(date(date_booking)) = '{}'".format(Y_ear,D_ay)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and YEAR(date(date_booking)) = '{}' AND DAY(date(date_booking)) = '{}'".format(Y_ear,D_ay)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE YEAR(date(date_booking)) = '{}' AND DAY(date(date_booking)) = '{}'".format(Y_ear,D_ay)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg" : myresult + myresult1 + myresult2})
     # ปี : เดือน
     elif Y_ear != "00" and M_onth != "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND MONTH(date(history.date_booking)) = '{}' AND history.status='not paid';".format(Y_ear,M_onth)
-        sql1 = "SELECT COUNT(status) FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND MONTH(date(history.date_booking)) = '{}' AND history.status='paid';".format(Y_ear,M_onth)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_pay FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and YEAR(date(date_booking)) = '{}' AND MONTH(date(date_booking)) = '{}'".format(Y_ear,M_onth)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and YEAR(date(date_booking)) = '{}' AND MONTH(date(date_booking)) = '{}'".format(Y_ear,M_onth)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE YEAR(date(date_booking)) = '{}' AND MONTH(date(date_booking)) = '{}'".format(Y_ear,M_onth)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg": myresult + myresult1 + myresult2})
     # เดือน : วัน
     elif Y_ear != "00" and M_onth != "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth,D_ay)
-        sql1 = "SELECT COUNT(status) FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='paid';".format(M_onth,D_ay)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and MONTH(date(date_booking)) = '{}' AND DAY(date(date_booking)) = '{}'".format(
+            M_onth, D_ay)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and MONTH(date(date_booking)) = '{}' AND DAY(date(date_booking)) = '{}'".format(
+            M_onth, D_ay)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE MONTH(date(date_booking)) = '{}' AND DAY(date(date_booking)) = '{}'".format(
+            M_onth, D_ay)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg": myresult + myresult1 + myresult2})
     # ปี
     elif Y_ear != "00" and M_onth == "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth,D_ay)
-        sql1 = "SELECT COUNT(status) FROM history WHERE YEAR(date(history.date_booking)) = '{}' AND history.status='paid';".format(Y_ear)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and YEAR(date(date_booking)) = '{}'".format(
+            Y_ear)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and YEAR(date(date_booking)) = '{}'".format(
+            Y_ear)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE YEAR(date(date_booking)) = '{}'".format(
+            Y_ear)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg": myresult + myresult1 + myresult2})
     # เดือน
     elif Y_ear == "00" and M_onth != "00" and D_ay == "00":
-        sql = "SELECT COUNT(status) FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth)
-        sql1 = "SELECT COUNT(status) FROM history WHERE MONTH(date(history.date_booking)) = '{}' AND history.status='paid';".format(M_onth)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_pay FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and MONTH(date(date_booking)) = '{}'".format(
+            M_onth)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and MONTH(date(date_booking)) = '{}'".format(
+            M_onth)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE MONTH(date(date_booking)) = '{}'".format(
+            M_onth)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg": myresult + myresult1 + myresult2})
     # วัน
     elif Y_ear == "00" and M_onth == "00" and D_ay != "00":
-        sql = "SELECT COUNT(status) FROM history WHERE DAY(date(history.date_booking)) = '{}' AND history.status='not paid';".format(M_onth)
-        sql1 = "SELECT COUNT(status) FROM history WHERE DAY(date(history.date_booking)) = '{}' AND history.status='paid';".format(M_onth)
+        sql = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS not_pay FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'not paid' and DAY(date(date_booking)) = '{}'".format(
+            D_ay)
+        sql1 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS price,COUNT(id_history) AS paid FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE history.status = 'paid' and DAY(date(date_booking)) = '{}'".format(
+            D_ay)
+        sql2 = "SELECT CAST(SUM(tour.price) AS varchar(10)) AS total_price,COUNT(id_history) AS total_booking FROM history INNER JOIN tour on history.id_tour = tour.id_tour INNER JOIN user on history.id_user = user.id_user INNER JOIN country on tour.id_country = country.id_country WHERE DAY(date(date_booking)) = '{}'".format(
+            D_ay)
         mycursor.execute(sql)
         mycursor1.execute(sql1)
+        mycursor2.execute(sql2)
         myresult = mycursor.fetchall()
         myresult1 = mycursor1.fetchall()
+        myresult2 = mycursor2.fetchall()
         mydb.commit()
         mydb.close()
         mydb1.commit()
         mydb1.close()
-        return jsonify(([{"not pay": myresult}, {"paid": myresult1}]))
+        mydb2.commit()
+        mydb2.close()
+        return jsonify({"msg": myresult + myresult1 + myresult2})
     else:
-        return "ผิด"
+        return jsonify({"msg" : "ผิด"})

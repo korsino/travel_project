@@ -4,25 +4,25 @@ from flask import Blueprint
 vm_routes = Blueprint('/controller', __name__)
 
 vm_routes.add_url_rule(
-    'tour',
+    'tours',
     'tour/create_tour',
     main.add_programtour,
     methods=['POST'],
 )
 vm_routes.add_url_rule(
-    'tour',
+    'tours',
     'tour',
     main.select_programtour,
     methods=['GET'],
 )
 vm_routes.add_url_rule(
-    'tour',
+    'tours',
     'tour/edit_tour',
     main.put_programtour,
     methods=['PUT'],
 )
 vm_routes.add_url_rule(
-    'tour',
+    'tours',
     'tour/delete_tour',
     main.delete_programtour,
     methods=['DELETE'],
@@ -76,7 +76,7 @@ vm_routes.add_url_rule(
     methods=['PUT'],
 )
 vm_routes.add_url_rule(
-    'report',
+    'reports',
     'report_tour',
     main.report_tour,
     methods=['GET'],
